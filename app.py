@@ -1,9 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-import plotly.express as px
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
@@ -18,71 +15,62 @@ The Mental Fitness Tracker is an AI-powered project aimed at monitoring and supp
 It uses regression models to analyze and predict mental fitness based on various factors.
 """)
 
-# Upload data files
-st.header('Upload Your Data Files')
-uploaded_file1 = st.file_uploader("Upload the prevalence data CSV", type="csv")
-uploaded_file2 = st.file_uploader("Upload the mental and substance use data CSV", type="csv")
-
-if uploaded_file1 and uploaded_file2:
-    df1 = pd.read_csv(uploaded_file1)
-    df2 = pd.read_csv(uploaded_file2)
-
-    st.subheader('First Few Rows of Prevalence Data')
-    st.write(df1.head())
-
-    st.subheader('Last Few Rows of Mental and Substance Use Data')
-    st.write(df2.tail(10))
-
-    # Data Merging
-    st.subheader('Merged Data')
-    data = pd.merge(df1, df2, on="Year")
-    st.write(data.head())
-
-    # Display correlation matrix
-    st.subheader('Correlation Matrix')
-    corr = data.corr()
-    sns.heatmap(corr, annot=True, cmap='coolwarm')
-    st.pyplot()
-
+# Function to train models (this would typically be done offline and models would be loaded directly)
+def train_models():
+    # Sample data (replace with your actual data)
+    data = pd.DataFrame({
+        'Feature1': np.random.rand(100),
+        'Feature2': np.random.rand(100),
+        'Target': np.random.rand(100)
+    })
+    
     # Define features and target variable
-    x = data[['Some_Feature1', 'Some_Feature2']]  # Update with actual feature columns
-    y = data['Target_Variable']  # Update with actual target variable
-
+    x = data[['Feature1', 'Feature2']]
+    y = data['Target']
+    
     # Split the data into training and testing sets
     from sklearn.model_selection import train_test_split
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    # Linear Regression Model
-    st.subheader('Linear Regression Model')
+    # Train Linear Regression Model
     lr = LinearRegression()
     lr.fit(xtrain, ytrain)
-    ytrain_pred = lr.predict(xtrain)
-    mse = mean_squared_error(ytrain, ytrain_pred)
-    rmse = np.sqrt(mse)
-    r2 = r2_score(ytrain, ytrain_pred)
-    st.write(f"MSE: {mse}")
-    st.write(f"RMSE: {rmse}")
-    st.write(f"R2 Score: {r2}")
 
-    # Random Forest Regressor Model
-    st.subheader('Random Forest Regressor Model')
+    # Train Random Forest Regressor Model
     rf = RandomForestRegressor()
     rf.fit(xtrain, ytrain)
-    ytrain_pred = rf.predict(xtrain)
-    mse = mean_squared_error(ytrain, ytrain_pred)
-    rmse = np.sqrt(mse)
-    r2 = r2_score(ytrain, ytrain_pred)
-    st.write(f"MSE: {mse}")
-    st.write(f"RMSE: {rmse}")
-    st.write(f"R2 Score: {r2}")
+    
+    return lr, rf
 
-    # Model Comparison
-    st.subheader('Model Comparison on Test Set')
-    lr_scores = lr.score(xtest, ytest)
-    rf_scores = rf.score(xtest, ytest)
-    st.write(f"Linear Regression Test Score: {lr_scores}")
-    st.write(f"Random Forest Regressor Test Score: {rf_scores}")
+# Train models (or load pre-trained models)
+lr, rf = train_models()
 
-else:
-    st.write("Please upload both CSV files to proceed.")
+# Form for user input
+st.header('Input Your Data')
+feature1 = st.number_input('Feature 1', min_value=0.0, max_value=1.0, value=0.5)
+feature2 = st.number_input('Feature 2', min_value=0.0, max_value=1.0, value=0.5)
+
+# Make predictions
+if st.button('Predict'):
+    input_data = np.array([[feature1, feature2]])
+    
+    # Linear Regression Prediction
+    lr_pred = lr.predict(input_data)
+    
+    # Random Forest Prediction
+    rf_pred = rf.predict(input_data)
+    
+    st.subheader('Predictions')
+    st.write(f"Linear Regression Prediction: {lr_pred[0]:.2f}")
+    st.write(f"Random Forest Prediction: {rf_pred[0]:.2f}")
+
+# Display information about the models
+st.header('Model Information')
+st.markdown("""
+### Linear Regression Model
+Linear Regression is a simple regression model that assumes a linear relationship between the input variables (features) and the output variable (target).
+
+### Random Forest Regressor Model
+Random Forest is an ensemble learning method that operates by constructing multiple decision trees during training and outputting the average prediction of the individual trees.
+""")
 
