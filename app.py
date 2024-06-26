@@ -13,7 +13,7 @@ def add_bg_from_url():
          f"""
          <style>
          .stApp {{
-             background-image: url("https://images3.alphacoders.com/128/thumb-1920-1287678.jpg");
+             background-image: url("https://wallpapers.com/images/hd/cyan-northern-lights-landscape-3sshfp161f2x0y62.jpg");
              background-attachment: fixed;
              background-size: cover;
          }}
