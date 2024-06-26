@@ -1,58 +1,27 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, r2_score
+import joblib
 
-# Set the title of the Streamlit app
+# Load the trained models
+lr = joblib.load('linear_regression_model.pkl')
+rf = joblib.load('random_forest_model.pkl')
+
+# Streamlit app
 st.title('Mental Fitness Tracker')
 
-# About the project
-st.markdown("""
-## Mental Fitness Tracker
-The Mental Fitness Tracker is an AI-powered project aimed at monitoring and supporting mental well-being using advanced algorithms. 
-It uses regression models to analyze and predict mental fitness based on various factors.
-""")
-
-# Function to train models (this would typically be done offline and models would be loaded directly)
-def train_models():
-    # Sample data (replace with your actual data)
-    data = pd.DataFrame({
-        'Feature1': np.random.rand(100),
-        'Feature2': np.random.rand(100),
-        'Target': np.random.rand(100)
-    })
-    
-    # Define features and target variable
-    x = data[['Feature1', 'Feature2']]
-    y = data['Target']
-    
-    # Split the data into training and testing sets
-    from sklearn.model_selection import train_test_split
-    xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.2, random_state=42)
-
-    # Train Linear Regression Model
-    lr = LinearRegression()
-    lr.fit(xtrain, ytrain)
-
-    # Train Random Forest Regressor Model
-    rf = RandomForestRegressor()
-    rf.fit(xtrain, ytrain)
-    
-    return lr, rf
-
-# Train models (or load pre-trained models)
-lr, rf = train_models()
-
-# Form for user input
+# Input fields for user data
 st.header('Input Your Data')
-feature1 = st.number_input('Feature 1', min_value=0.0, max_value=1.0, value=0.5)
-feature2 = st.number_input('Feature 2', min_value=0.0, max_value=1.0, value=0.5)
+schizophrenia = st.number_input('Prevalence - Schizophrenia - Sex: Both - Age: Age-standardized (Percent)', min_value=0.0, max_value=100.0, value=0.0)
+bipolar = st.number_input('Prevalence - Bipolar disorder - Sex: Both - Age: Age-standardized (Percent)', min_value=0.0, max_value=100.0, value=0.0)
+eating_disorders = st.number_input('Prevalence - Eating disorders - Sex: Both - Age: Age-standardized (Percent)', min_value=0.0, max_value=100.0, value=0.0)
+anxiety = st.number_input('Prevalence - Anxiety disorders - Sex: Both - Age: Age-standardized (Percent)', min_value=0.0, max_value=100.0, value=0.0)
+drug_use = st.number_input('Prevalence - Drug use disorders - Sex: Both - Age: Age-standardized (Percent)', min_value=0.0, max_value=100.0, value=0.0)
+depressive = st.number_input('Prevalence - Depressive disorders - Sex: Both - Age: Age-standardized (Percent)', min_value=0.0, max_value=100.0, value=0.0)
+alcohol_use = st.number_input('Prevalence - Alcohol use disorders - Sex: Both - Age: Age-standardized (Percent)', min_value=0.0, max_value=100.0, value=0.0)
 
 # Make predictions
 if st.button('Predict'):
-    input_data = np.array([[feature1, feature2]])
+    input_data = np.array([[schizophrenia, bipolar, eating_disorders, anxiety, drug_use, depressive, alcohol_use]])
     
     # Linear Regression Prediction
     lr_pred = lr.predict(input_data)
@@ -61,8 +30,15 @@ if st.button('Predict'):
     rf_pred = rf.predict(input_data)
     
     st.subheader('Predictions')
-    st.write(f"Linear Regression Prediction: {lr_pred[0]:.2f}")
-    st.write(f"Random Forest Prediction: {rf_pred[0]:.2f}")
+    st.write("Linear Regression Prediction:")
+    st.write(f"Country: {lr_pred[0][0]}")
+    st.write(f"Code: {lr_pred[0][1]}")
+    st.write(f"Year: {lr_pred[0][2]}")
+    
+    st.write("Random Forest Prediction:")
+    st.write(f"Country: {rf_pred[0][0]}")
+    st.write(f"Code: {rf_pred[0][1]}")
+    st.write(f"Year: {rf_pred[0][2]}")
 
 # Display information about the models
 st.header('Model Information')
@@ -73,4 +49,3 @@ Linear Regression is a simple regression model that assumes a linear relationshi
 ### Random Forest Regressor Model
 Random Forest is an ensemble learning method that operates by constructing multiple decision trees during training and outputting the average prediction of the individual trees.
 """)
-
