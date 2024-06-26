@@ -19,12 +19,13 @@ def add_bg_from_url():
          }}
          .stApp::before {{
              content: "";
-             position: absolute;
+             position: fixed;
              top: 0;
              right: 0;
              bottom: 0;
              left: 0;
              background-color: rgba(0, 0, 0, 0.7);  /* Dark overlay */
+             z-index: -1;
          }}
          .stApp > div {{
              position: relative;
@@ -35,6 +36,9 @@ def add_bg_from_url():
          }}
          .stSelectbox label, .stNumberInput label {{
              color: white !important;
+         }}
+         .stApp > header {{
+             background-color: rgba(0, 0, 0, 0.5) !important;
          }}
          </style>
          """,
