@@ -13,23 +13,13 @@ def add_bg_from_url():
          f"""
          <style>
          .stApp {{
-             background-image: url("https://wallpapers.com/images/hd/cyan-northern-lights-landscape-3sshfp161f2x0y62.jpg");
-             background-attachment: fixed;
+             background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url("https://images3.alphacoders.com/128/thumb-1920-1287678.jpg");
              background-size: cover;
+             background-attachment: fixed;
+             background-position: center;
          }}
-         .stApp::before {{
-             content: "";
-             position: fixed;
-             top: 0;
-             right: 0;
-             bottom: 0;
-             left: 0;
-             background-color: rgba(0, 0, 0, 0.7);  /* Dark overlay */
-             z-index: -1;
-         }}
-         .stApp > div {{
-             position: relative;
-             z-index: 1;
+         .stApp > header {{
+             background-color: rgba(0, 0, 0, 0.5) !important;
          }}
          .stApp {{
              color: white;
@@ -37,8 +27,22 @@ def add_bg_from_url():
          .stSelectbox label, .stNumberInput label {{
              color: white !important;
          }}
-         .stApp > header {{
-             background-color: rgba(0, 0, 0, 0.5) !important;
+         /* Ensure all content is scrollable */
+         .main .block-container {{
+             max-height: 100vh;
+             overflow-y: auto;
+             padding-top: 5rem;
+             padding-bottom: 5rem;
+         }}
+         /* Adjust for mobile devices */
+         @media (max-width: 768px) {{
+             .stApp {{
+                 background-attachment: scroll;
+             }}
+             .main .block-container {{
+                 padding-top: 3rem;
+                 padding-bottom: 3rem;
+             }}
          }}
          </style>
          """,
@@ -48,7 +52,6 @@ def add_bg_from_url():
 # Load the dataset
 @st.cache_data
 def load_data():
-    # Replace this with your actual dataset loading code
     df = pd.read_csv("prevalence-by-mental-and-substance-use-disorder.csv")
     return df
 
@@ -101,10 +104,10 @@ country_model = rf_country if rf_country_mse < lr_country_mse else lr_country
 code_model = rf_code if rf_code_mse < lr_code_mse else lr_code
 year_model = rf_year if rf_year_mse < lr_year_mse else lr_year
 
-# Add background image
+# Streamlit app
+st.set_page_config(layout="wide")  # Use wide layout
 add_bg_from_url()
 
-# Streamlit app
 st.title("Mental Health Prevalence Predictor")
 
 # Input fields
