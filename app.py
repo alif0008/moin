@@ -1,130 +1,88 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
 
-def add_bg_from_url():
-    st.markdown(
-         f"""
-         <style>
-         .stApp {{
-             background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("https://png.pngtree.com/background/20231030/original/pngtree-d-illustration-of-isolated-red-background-with-a-group-of-blurred-picture-image_5803330.jpg");
-             background-attachment: fixed;
-             background-size: cover;
-         }}
-         .stApp > header {{
-             background-color: transparent;
-         }}
-         .stApp {{
-             color: white;
-         }}
-         .stButton > button {{
-             color: black;
-             background-color: #ffffff;
-             border: 2px solid #4CAF50;
-         }}
-         .stTextInput > div > div > input {{
-             color: black;
-         }}
-         </style>
-         """,
-         unsafe_allow_html=True
-     )
+# Set the title of the Streamlit app
+st.title('Mental Fitness Tracker')
 
-# Load dataset
-@st.cache_data
-def load_data():
-    return pd.read_csv("Housingprice.csv")
+# About the project
+st.markdown("""
+## Mental Fitness Tracker
+The Mental Fitness Tracker is an AI-powered project aimed at monitoring and supporting mental well-being using advanced algorithms. 
+It uses regression models to analyze and predict mental fitness based on various factors.
+""")
 
-# Preprocess dataset
-@st.cache_data
-def preprocess_data(data):
-    data = data.drop(['Address'], axis=1)
-    bins = [0, np.percentile(data['Price'], 33), np.percentile(data['Price'], 66), np.max(data['Price'])]
-    labels = ['Low', 'Medium', 'High']
-    data['Price_Category'] = pd.cut(data['Price'], bins=bins, labels=labels)
-    data = data.drop(['Price'], axis=1)
+# Upload data files
+st.header('Upload Your Data Files')
+uploaded_file1 = st.file_uploader("Upload the prevalence data CSV", type="csv")
+uploaded_file2 = st.file_uploader("Upload the mental and substance use data CSV", type="csv")
 
-    # Convert categorical variables to numerical using Label Encoding
-    label_encoder = LabelEncoder()
-    for column in data.select_dtypes(include=['object']):
-        data[column] = label_encoder.fit_transform(data[column])
+if uploaded_file1 and uploaded_file2:
+    df1 = pd.read_csv(uploaded_file1)
+    df2 = pd.read_csv(uploaded_file2)
 
-    return data
+    st.subheader('First Few Rows of Prevalence Data')
+    st.write(df1.head())
 
-# Split data and train model
-@st.cache_resource
-def train_model(data):
-    X = data.drop(['Price_Category'], axis=1)
-    Y = data['Price_Category']
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.30, random_state=42)
+    st.subheader('Last Few Rows of Mental and Substance Use Data')
+    st.write(df2.tail(10))
 
-    rf_model = RandomForestClassifier(random_state=42)
-    rf_model.fit(X_train, Y_train)
-    return rf_model
+    # Data Merging
+    st.subheader('Merged Data')
+    data = pd.merge(df1, df2, on="Year")
+    st.write(data.head())
 
-# Define meaningful price ranges
-price_ranges = {
-    'Low': 'Affordable houses (below average prices)',
-    'Medium': 'Moderate-priced houses',
-    'High': 'Luxury or high-end houses'
-}
+    # Display correlation matrix
+    st.subheader('Correlation Matrix')
+    corr = data.corr()
+    sns.heatmap(corr, annot=True, cmap='coolwarm')
+    st.pyplot()
 
-# Add background image with reduced brightness
-add_bg_from_url()
+    # Define features and target variable
+    x = data[['Some_Feature1', 'Some_Feature2']]  # Update with actual feature columns
+    y = data['Target_Variable']  # Update with actual target variable
 
-# Streamlit app
-st.title("House Price Prediction")
+    # Split the data into training and testing sets
+    from sklearn.model_selection import train_test_split
+    xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.2, random_state=42)
 
-st.header("Input House Details")
+    # Linear Regression Model
+    st.subheader('Linear Regression Model')
+    lr = LinearRegression()
+    lr.fit(xtrain, ytrain)
+    ytrain_pred = lr.predict(xtrain)
+    mse = mean_squared_error(ytrain, ytrain_pred)
+    rmse = np.sqrt(mse)
+    r2 = r2_score(ytrain, ytrain_pred)
+    st.write(f"MSE: {mse}")
+    st.write(f"RMSE: {rmse}")
+    st.write(f"R2 Score: {r2}")
 
-# Load and preprocess data
-data = load_data()
-data = preprocess_data(data)
+    # Random Forest Regressor Model
+    st.subheader('Random Forest Regressor Model')
+    rf = RandomForestRegressor()
+    rf.fit(xtrain, ytrain)
+    ytrain_pred = rf.predict(xtrain)
+    mse = mean_squared_error(ytrain, ytrain_pred)
+    rmse = np.sqrt(mse)
+    r2 = r2_score(ytrain, ytrain_pred)
+    st.write(f"MSE: {mse}")
+    st.write(f"RMSE: {rmse}")
+    st.write(f"R2 Score: {r2}")
 
-# Train model
-model = train_model(data)
+    # Model Comparison
+    st.subheader('Model Comparison on Test Set')
+    lr_scores = lr.score(xtest, ytest)
+    rf_scores = rf.score(xtest, ytest)
+    st.write(f"Linear Regression Test Score: {lr_scores}")
+    st.write(f"Random Forest Regressor Test Score: {rf_scores}")
 
-# Using columns to place the input field and example side by side
-col1, col2 = st.columns([3, 1])
-with col1:
-    income = st.number_input("Avg. Area Income:", min_value=0.0, step=1000.0, format="%.2f")
-with col2:
-    st.text("(e.g., 60000)")
+else:
+    st.write("Please upload both CSV files to proceed.")
 
-col1, col2 = st.columns([3, 1])
-with col1:
-    age = st.number_input("Avg. Area House Age:", min_value=0.0, step=1.0, format="%.1f")
-with col2:
-    st.text("(e.g., 20)")
-
-col1, col2 = st.columns([3, 1])
-with col1:
-    rooms = st.number_input("Avg. Area Number of Rooms:", min_value=0.0, step=1.0, format="%.1f")
-with col2:
-    st.text("(e.g., 5)")
-
-col1, col2 = st.columns([3, 1])
-with col1:
-    bedrooms = st.number_input("Avg. Area Number of Bedrooms:", min_value=0.0, step=1.0, format="%.1f")
-with col2:
-    st.text("(e.g., 3)")
-
-col1, col2 = st.columns([3, 1])
-with col1:
-    population = st.number_input("Area Population:", min_value=0.0, step=1000.0, format="%.0f")
-with col2:
-    st.text("(e.g., 36500)")
-
-if st.button("Predict"):
-    input_data = [[income, age, rooms, bedrooms, population]]
-    prediction = model.predict(input_data)[0]
-    predicted_category = price_ranges.get(prediction, 'Unknown')
-    st.success(f'Predicted Price Category: {predicted_category}')
-
-# Add some information about the model
-st.sidebar.header("About")
-st.sidebar.info("This app uses a Random Forest model to predict house price categories based on area statistics.")
-st.sidebar.info("The model is trained on historical housing data and categorizes prices into Low, Medium, and High ranges.")
